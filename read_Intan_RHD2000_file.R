@@ -89,11 +89,17 @@ ConvertRHD2Excel <- function(filename)
         out_xlsx <-  paste(dirname(rl[[i]][j]), '/', 
                            file_path_sans_ext(basename(rl[[i]][j])) ,".xlsx", sep="")
         
-        WriteDF2ExcelFile(out_xlsx, df_for_workbook, worksheetName)
+        print(worksheetName)
+        print(substr(worksheetName, 1, 31))
+        
+        WriteDF2ExcelFile(out_xlsx, df_for_workbook, substr(worksheetName, 1, 31))
       }
       else{
         
-        WriteDF2ExcelFile(out_xlsx, df_for_workbook = XX, worksheetName)
+        print(worksheetName)
+        print(substr(worksheetName, 1, 31))
+        
+        WriteDF2ExcelFile(out_xlsx, df_for_workbook = XX, substr(worksheetName, 1, 31))
       }
       
     }
