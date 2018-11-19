@@ -1,5 +1,4 @@
 #clear() # Clear the environment
-
 library(signal)
 library(dygraphs)
 source("TremsenToolbox.r")
@@ -7,7 +6,8 @@ source("TremsenToolbox.r")
 
 # Function Calls for MVC --------------------------------------------------
 # Function to get the MVC from a file
-getMVC<-function(filename, subjectCode, chanList = list(2,3), cutoffFreq=1, percentage = 0.5, PLOT=FALSE){
+getMVC<-function(filename, pathData, subjectCode, chanList = list(2,3), cutoffFreq=1, percentage = 0.5, PLOT=FALSE){
+  filename<-paste(pathData,filename, sep="")
   df <- readWorkbook(filename,
                      sheet = 1,
                      detectDates = TRUE)
