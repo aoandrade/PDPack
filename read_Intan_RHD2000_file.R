@@ -2,7 +2,7 @@
 
 # Prof. Adriano O. Andrade, PhD
 # adriano@ufu.br
-# 09 Nov 2018
+# 19 Nov 2018
 # version 1.0
 
 # Libraries ---------------------------------------------------------------
@@ -20,7 +20,7 @@ if (!require(tools)) install.packages('tools')
 if (!require(seewave)) install.packages('seewave')
 if (!require(fftw)) install.packages('fftw')
 if (!require(psd)) install.packages('psd') 
-if (!require(EMD)) install.packages('EMD') 
+if (!require(EMD)) install.packages('EMD')
 
 
 # load libraries
@@ -70,13 +70,13 @@ ConvertRHD2Excel <- function(filename)
   {
     Nj <- length(rl[[i]])
     
-    tt <- ones(Nj,2) * NA # matrix for storing the beginning and the end of time
+    tt <- pracma::ones(Nj,2) * NA # matrix for storing the beginning and the end of time
     
     for (j in 1:Nj){
       
-      X <- OpenIntanFile(rl[[i]][j])
+      XX <- OpenIntanFile(rl[[i]][j])
       
-      XX <- data.frame(time = X$t_amplifier, chan = t(X$amplifier_data), Pulse = X$board_dig_in_data)
+     # XX <- data.frame(time = X$t_amplifier, chan = t(X$amplifier_data), Pulse = X$board_dig_in_data)
       
       tt[j,1] <- XX$time[1]
       tt[j,2] <- XX$time[length(XX$time)]
@@ -831,10 +831,24 @@ OpenIntanFile <- function(filename)
     }
   }
   
-  return(list(
-              t_amplifier = t_amplifier[1,], 
-              amplifier_data =  amplifier_data,
-              board_dig_in_data = board_dig_in_data[1,] ))
+  
+  # merging data in data frame
+  df1 <- as.data.frame(list(as.vector(t_amplifier)) , col.names='time')
+  df <- as.data.frame(list(t(amplifier_data)) , col.names='chan')
+  df <- base::cbind(df1, df)
+  
+  if ( isempty(board_dig_in_data) == TRUE )
+  {
+    df$pulse <- 0
+  }
+  else
+  {
+    df2 <- as.data.frame(list(t(board_dig_in_data)), col.names = "pulse")
+    df <- base::cbind(df, df2)
+  }
+  
+  
+  return(df)
 
   
 }
