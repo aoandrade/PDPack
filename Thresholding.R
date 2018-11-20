@@ -40,10 +40,11 @@ getMVC<-function(filename, pathData, subjectCode, chanList = list(2,3), cutoffFr
     
     # Pre-processing the channel: detrending, getting signal envelope, and filtering
     sig<-df[,chanNum]
+    
     sig<-filterHP(sig, Fs, cutFreq=200)
     sig.detrended <- detrendRaw(sig, df$time)
-    s_env<-detectEnv(sig.detrended, Fs, cutFreq = 1)
-    sigFilt <- filterMVC(s_env, Fs, cutFreq = 2)
+    s_env<-detectEnv(sig.detrended, Fs, cutoffFreq)
+    sigFilt <- filterMVC(s_env, Fs, cutoffFreq)
     #sigFilt <- detrend(sigFilt, tt="linear")
     
     # Detect event based on the detrended raw signal
@@ -144,7 +145,7 @@ filterMVC<-function(sig, Fs, cutFreq = 2){
   return(s_filt)
 }
 
-# Nonlinear detrending 
+# Nonlinear detrending (Step 1)
 detrendRaw <- function(rawSignal, t){
   dat <- data.frame(x = t, y = rawSignal)
   print("Start detrending. Please wait.")
@@ -242,7 +243,7 @@ detectEvent <- function(dftmp, percentage = 0.08){
   # Using low pass to remove high frequency noise
   Fs <- 1/0.02
   Fn <- Fs/2
-  f <- 0.5
+  f <- 0.5      # in Hz
   per <-f/Fn
   bf <- butter(4, per, type="low")
   filtered <- filtfilt(bf, abs(tmp))

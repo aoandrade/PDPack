@@ -8,7 +8,7 @@ source("Thresholding.R")
 #pathData ="D:/Adriano/OneDrive/Projetos/2017-Brazil-Canada/DATA/EJRR/09Nov2018/EMG/Excel"
 pathData = "/Users/alicerueda/Documents/RStudio/Adriano/DATA/"
 # defining subject and filetype
-subjectCode = "CAG"
+subjectCode = "EJRR"
 signalType = "EMG"
 fileType = "Excel"
 
