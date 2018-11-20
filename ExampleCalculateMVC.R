@@ -3,6 +3,7 @@
 # Load all necesssary libraries
 source("read_Intan_RHD2000_file.R")
 source("Thresholding.R")
+source("EMGLib.R")
 
 #subjectCode: get it from the directory
 #pathData ="D:/Adriano/OneDrive/Projetos/2017-Brazil-Canada/DATA/EJRR/09Nov2018/EMG/Excel"
