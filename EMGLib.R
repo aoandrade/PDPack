@@ -1,6 +1,22 @@
 source("Thresholding.R")
 
 # Functions for MVC --------------------------------------------------
+# Normalize the Results using the maximum value of the channel in maxRefTable
+getEMGNormResults<-function(Results, maxRefTable){
+  normResults<-Results
+  dimResults<-size(normResults)
+  nChannel <- dimResults[1]
+  nBurst <- dimResults[2]
+  for (i in 1:nChannel){
+    maxValue <- maxRefTable$medianMVC[i]
+    for (j in 1:nBurst){
+      normResults[[i,j]]$peakValue <- Results[[i,j]]$peakValue/maxValue
+      normResults[[i,j]]$valleyValue <- Results[[i,j]]$valleyValue/maxValue
+    }
+  }
+  return(normResults)  
+}
+
 # Getting the maximum reference MVC for each channel
 getEMGMaxRefTable<-function(filename){
   dfReference <- readWorkbook(filename,
