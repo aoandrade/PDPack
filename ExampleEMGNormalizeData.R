@@ -19,5 +19,8 @@ Results<- getEMGTimeFeatures(df, PLOT=FALSE)
 
 
 # Normalize the Results using the maximum value of the channel in maxRefTable
+
 normResults<-getEMGNormResults(Results, maxRefTable)
 
+
+# Save result to file

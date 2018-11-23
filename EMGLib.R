@@ -85,7 +85,7 @@ getMVC<-function(filename, pathData, subjectCode, chanList = list(2,3), cutoffFr
     #tsig<-(1:length(signal))/Fs
     if (PLOT) {
       dfplot <- data.frame(time=df$time, sig, s_env, sigFilt, eventDetect*max(sig))
-      p<-dygraph(dfplot, main = paste("Channel ", chanNum, sep = "")) %>%
+      p<-dygraph(dfplot, main = paste("Channel ", chanNum-1, sep = "")) %>%
         dyOptions(colors = c('black', 'blue', 'green','red')) %>% 
         dyAxis("x", label="Time (s)") %>% 
         dyAxis("y", label="Magnitude")
@@ -361,7 +361,7 @@ getEMGTimeFeatures<-function(df, PLOT=TRUE){
       detrendedPartSig[[i]] <- filterMVC(detrendedPartSig[[i]], Fs, defaultCutoff[i])
       
       if (PLOT){
-        Title <- paste("Channel",channel, "burst", i)
+        Title <- paste("Channel",channel-1, "burst", i)
         dfplot<-data.frame(time=sigTime, tmpSig, detrendedPartSig[[i]])
         g <- dygraph(dfplot, main = Title) %>% dyRangeSelector() %>%
           dyAxis("x", label = "Time (s)") %>%

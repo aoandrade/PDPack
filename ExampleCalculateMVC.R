@@ -28,7 +28,7 @@ filename <- filename[which(grepl("^CVM", filename)==TRUE)]     # Only selecting 
 #dfSave <- getMVC(filename[[4]], pathData, subjectCode, chanList = list(2,3,4), cutoffFreq=1, percentage = 0.5,PLOT=TRUE)
 
 # Example for processing all files in the directory
-dfSave <- lapply(filename, FUN=getMVC, pathData, subjectCode, chanList = list(2,3,4), cutoffFreq=1, percentage = 0.5,PLOT=FALSE)
+dfSave <- lapply(filename, FUN=getMVC, pathData, subjectCode, chanList = list(2,3,4), cutoffFreq=1, percentage = 0.5,PLOT=TRUE)
 
 df<-do.call("rbind",dfSave)
 
