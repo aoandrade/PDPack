@@ -6,8 +6,8 @@ source("Thresholding.R")
 source("EMGLib.R")
 
 #subjectCode: get it from the directory
-#pathData ="D:/Adriano/OneDrive/Projetos/2017-Brazil-Canada/DATA/EJRR/09Nov2018/EMG/Excel"
-pathData = "/Users/alicerueda/Documents/RStudio/Adriano/DATA/"
+pathData ="D:/Adriano/OneDrive/Projetos/2017-Brazil-Canada/DATA/"
+#pathData = "/Users/alicerueda/Documents/RStudio/Adriano/DATA/"
 # defining subject and filetype
 subjectCode = "EJRR"
 signalType = "EMG"
