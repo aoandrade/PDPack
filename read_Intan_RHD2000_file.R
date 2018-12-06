@@ -767,8 +767,8 @@ OpenIntanFile <- function(filename)
       {
         for (i in 1:num_board_dig_out_channels)
         {
-          mask <- 2^(board_dig_out_channels[[i]][[i]]@native_order) * ones(1, length(board_dig_out_raw))
-          board_dig_out_data[i, ] <- (bitAnd(board_dig_out_raw, mask) > 0)
+         # mask <- 2^(board_dig_out_channels[[i]][[i]]@native_order) * pracma::ones(1, length(board_dig_out_raw))
+        #  board_dig_out_data[i, ] <- (bitAnd(board_dig_out_raw, mask) > 0)
         }
       }
       
