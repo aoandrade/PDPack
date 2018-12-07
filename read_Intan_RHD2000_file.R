@@ -759,7 +759,8 @@ OpenIntanFile <- function(filename)
       {
         for (i in 1:num_board_dig_in_channels)
         {
-          mask <- 2^(board_dig_in_channels[[i]][[i]]@native_order) * pracma::ones(1, length(board_dig_in_raw)) 
+         # mask <- 2^(board_dig_in_channels[[i]][[i]]@native_order) * pracma::ones(1, length(board_dig_in_raw)) 
+          mask <- 2^(board_dig_in_channels[[i]][[1]]@native_order) * pracma::ones(1, length(board_dig_in_raw)) 
           board_dig_in_data[i, ] <- (bitAnd(board_dig_in_raw, mask) > 0)
         }
       }
@@ -768,7 +769,8 @@ OpenIntanFile <- function(filename)
         for (i in 1:num_board_dig_out_channels)
         {
          # mask <- 2^(board_dig_out_channels[[i]][[i]]@native_order) * pracma::ones(1, length(board_dig_out_raw))
-        #  board_dig_out_data[i, ] <- (bitAnd(board_dig_out_raw, mask) > 0)
+          mask <- 2^(board_dig_out_channels[[i]][[1]]@native_order) * pracma::ones(1, length(board_dig_out_raw))
+          board_dig_out_data[i, ] <- (bitAnd(board_dig_out_raw, mask) > 0)
         }
       }
       
@@ -791,6 +793,9 @@ OpenIntanFile <- function(filename)
       temp_sensor_data <- temp_sensor_data / 100 # units = deg C
       
       # Check for gaps in timestamps.
+      
+      t_amplifier <- as.vector(t_amplifier)
+      
       num_gaps = sum(diff(t_amplifier) != 1)
       if (num_gaps == 0){
         fprintf('No missing timestamps in data.\n')
