@@ -93,9 +93,17 @@ getMVC<-function(filename, pathData, subjectCode, chanList = list(2,3), cutoffFr
     }
     
     # Partition the signal
-    sep <- findSep(eventDetect)
-    partSig <- partitionChannel(sigFilt,sep)
-    partEvent <- partitionChannel(eventDetect,sep)
+    #sep <- findSep(eventDetect)
+    sep1 <- findSep(eventDetect)
+    
+    
+    partSig <- partitionChannel(sigFilt,sep1)
+    partEvent <- partitionChannel(eventDetect,sep1)
+    
+    #partSig <- partitionChannel(sigFilt,sep)
+    #partEvent <- partitionChannel(eventDetect,sep)
+    
+    
     eventIndicator <- zeros(length(partEvent))
     fprintf("Number of segments is %d \n", length(partEvent))
     for (k in 1: length(partEvent)){
@@ -277,8 +285,10 @@ detectEMGBurst <- function(dfSig, cutoffFreq=1, percentage = 1, PLOT=FALSE){
   eventDetect <- eventDetect*eventPulse
   
   if (PLOT) {
-    dfplot<-data.frame(df$time, sig.detrended, pulse*max(sig.detrended), filtered/max(filtered)*max(sig.detrended),eventDetect*max(sig.detrended))
-    g<-dygraph(dfplot) %>% dyRangeSelector() %>%
+    #dfplot<-data.frame(df$time, sig.detrended, pulse*max(sig.detrended), filtered/max(filtered)*max(sig.detrended),eventDetect*max(sig.detrended))
+    dfplot<-data.frame(df$time, sig.detrended, df$pulse*max(sig.detrended), filtered/max(filtered)*max(sig.detrended),eventDetect*max(sig.detrended))
+    
+     g<-dygraph(dfplot) %>% dyRangeSelector() %>%
       dyOptions(colors = c('black', 'blue', 'green','red')) %>% 
       dyAxis("x", label="Time (s)") %>% 
       dyAxis("y", label="Magnitude")
@@ -292,17 +302,25 @@ detectEMGBurst <- function(dfSig, cutoffFreq=1, percentage = 1, PLOT=FALSE){
 # Function to create label vector
 createEMGLabels<-function(eventDetect, Fs, minTime=1){
   minTime <- 1 #If the duration of the segment is less than 1 second than it is the same event
-  sep <- findSep(eventDetect)
-  sepLen <- length(sep)
+  #sep <- findSep(eventDetect)
+  sep1 <- findSep(eventDetect)
+  #sepLen <- length(sep)
+  sepLen <- length(sep1)
+  
   Labels <- rep(0, length(eventDetect))
   label <- 0   #The first label is no event
   segCount <-2 #The first segment is no event, so start at 2nd segment
   deltaT <- 1/Fs
-  endIdx <- sep[segCount-1]
+ # endIdx <- sep[segCount-1]
+  endIdx <- sep1[segCount-1]
   while (segCount<sepLen){
-    segTime <- sep[segCount]*deltaT #The duration of the segment period 
+    #segTime <- sep[segCount]*deltaT #The duration of the segment period 
+    segTime <- sep1[segCount]*deltaT #The duration of the segment period 
+    
     startIdx <- endIdx + 1
-    endIdx <- startIdx + sep[segCount]-1
+   # endIdx <- startIdx + sep[segCount]-1
+    endIdx <- startIdx + sep1[segCount]-1
+    
     if((segCount %% 2) == 0){  #if even segment
       if (segTime>minTime){
         label <- label + 1
@@ -313,7 +331,9 @@ createEMGLabels<-function(eventDetect, Fs, minTime=1){
       Labels[startIdx:endIdx]<-label   # same label as last
       segCount <- segCount + 1        # also label the next one the same
       startIdx <- endIdx+1
-      endIdx <- startIdx + sep[segCount]-1
+      #endIdx <- startIdx + sep[segCount]-1
+      endIdx <- startIdx + sep1[segCount]-1
+      
       Labels[startIdx:endIdx]<-label   # same label as last
     } 
     segCount <- segCount + 1
@@ -341,11 +361,14 @@ getEMGTimeFeatures<-function(df, PLOT=TRUE){
   #df$label <- Labels
   
   # Per channel partition: separate the signal into activities
-  sep <- findSep(emgBurst)
+  #sep <- findSep(emgBurst)
+  sep1 <- findSep(emgBurst)
+  
   for (channel in 2:(nChannel+1)) {
     fprintf("Processing channel %d. \n", channel-1)
     sig <- df[,channel]
-    partSig <- partitionChannel(sig,sep)
+    #partSig <- partitionChannel(sig,sep)
+    partSig <- partitionChannel(sig,sep1)
     
     # Detrend and filter signal based on the type of activity
     detrendedPartSig <- list(partSig[[2]], partSig[[4]], partSig[[6]], partSig[[8]])

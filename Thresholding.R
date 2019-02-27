@@ -114,9 +114,9 @@ findSep <- function(eventDetect){
 }
 
 # Partition the signal with return separation indice, provided that sep has been found using findSep()
-partitionChannel <- function(channel,sep){
+partitionChannel <- function(channel,sep1){
   #sep = findSep(eventDetect)
-  partChannel <- partition.vector(channel,sep)
+  partChannel <- partition.vector(channel,sep1)
   return(partChannel)
 }
 
