@@ -1,7 +1,7 @@
 #clear() # Clear the environment
 library(signal)
 library(dygraphs)
-source("TremsenToolbox.r")
+source("TREMSENToolbox.R")
 
 
 
