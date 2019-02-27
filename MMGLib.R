@@ -1,5 +1,10 @@
 
-
+# ---
+# title:MMGLib.R
+# author: "Alice Rueda"
+# date: "February 19, 2019"
+# This file contains the functional calls for MMG analysis using accelerometers.
+# ---
 
 # Using signal information and pulse indications to detection events
 detectMMGEvent <- function(dftmp, percentage = 0.08, ampFactor = 1){

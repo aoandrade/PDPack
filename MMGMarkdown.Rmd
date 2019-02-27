@@ -83,7 +83,7 @@ mag = sqrt(dftmp$X.A1.X.^2+dftmp$X.A1.Y.^2+dftmp$X.A1.Z.^2)
 
 channel = df.nonlineardetrended$X.A1.X.
 dfplot<-data.frame(time = df$X.Time.,channel, df$X.PULSE*max(channel), mag, eventDetect*max(channel))
-dygraph(dfplot, main = "Gyroscope 1 y-axis")%>%dyRangeSelector()%>% 
+dygraph(dfplot, main = "Accelerometer y-axis")%>%dyRangeSelector()%>% 
   dyOptions(colors = c('black', 'blue', 'green','red')) %>% 
   dyAxis("x", label="Time (s)") %>% 
   dyAxis("y", label="Angular velocity")
