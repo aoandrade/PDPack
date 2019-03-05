@@ -7,7 +7,7 @@
 # ---
 
 # Using signal information and pulse indications to detection events
-detectMMGEvent <- function(dftmp, percentage = 0.08, ampFactor = 1){
+detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE){
   
   # Adding optional amplification factor to weak signals
   tmpx = dftmp$X.A1.X.*ampFactor
@@ -35,19 +35,50 @@ detectMMGEvent <- function(dftmp, percentage = 0.08, ampFactor = 1){
   eventDetect[filtered < threshold] <- 0 
   eventDetect[filtered >= threshold] <- 1 
   
-  # # Event indication from pulse information
-  # diffPulse <- diff(dftmp$X.PULSE, lag=1)
-  # pulseStart <- which(diffPulse == 1)
-  # eventPulse <- zeros(length(dftmp$X.PULSE))
-  # for (i in 1:4){
-  #   startIdx <- pulseStart[2*i-1]
-  #   stopIdx <- pulseStart[2*i]
-  #   eventPulse[startIdx:stopIdx] <- 1
-  #   eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
-  # }
-  # 
-  # # Combing PULSE info with signal event
-  # eventDetect <- eventDetect*eventPulse
+  # Event indication from pulse information
+  diffPulse <- diff(dftmp$X.PULSE, lag=1)
+  pulseStart <- which(diffPulse == 1)
+  totalPulses <- sum(pulseStart)
+  
+  if (totalPulses > 7) {
+    eventPulse <- zeros(length(dftmp$X.PULSE))
+    if (totalPulses == 8) {
+      for (i in 1:4) {
+        startIdx <- pulseStart[2*i-1]
+        stopIdx <- pulseStart[2*i]
+        eventPulse[startIdx:stopIdx] <- 1
+        eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
+      }
+    }
+    else {
+      startIdx <- 1
+      stopIdx <- pulseStart[1]
+      eventPulse[startIdx:stopIdx] <- 1
+      eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
+      for (i in 1:3) {
+        startIdx <- pulseStart[2*i]
+        stopIdx <- pulseStart[2*i+1]
+        eventPulse[startIdx:stopIdx] <- 1
+        eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
+      }
+    }
+  }
+   
+  # Combing PULSE info with signal event
+  eventDetect <- eventDetect*eventPulse
+  
+  if (PLOT) {
+    mag = sqrt(dftmp$X.A1.X.^2+dftmp$X.A1.Y.^2+dftmp$X.A1.Z.^2)
+    
+    channel = dftmp$X.A1.X.
+    dfplot<-data.frame(time = dftmp$X.Time.,channel, dftmp$X.PULSE*max(channel), mag, eventDetect*max(channel))
+    dygraph(dfplot, main = "Accelerometer y-axis")%>%dyRangeSelector()%>% 
+      dyOptions(colors = c('black', 'blue', 'green','red')) %>% 
+      dyAxis("x", label="Time (s)") %>% 
+      dyAxis("y", label="Angular velocity")
+    
+    
+  }
   
   return(eventDetect)  
 }

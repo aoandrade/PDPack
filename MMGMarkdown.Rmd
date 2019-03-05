@@ -16,7 +16,7 @@ This file reads the MMG signal from *.txt files and display the raw signal befor
 - Pre-processing the necessary signal including detrendng, filtering, and segment the signals into activity windows with use of PULSE signals
 - Extract features from the clean segmented signals
 ```{r packages}
-source("Thresholding.R")
+source("IMULib.R")
 source("MMGLib.R")
 source("PlotSignals.R")
 source("TREMSENToolbox.R")
@@ -77,16 +77,7 @@ ggplotAccelerometer(df.nonlineardetrended)
 # Using detrend dataframe for event detection
 dftmp<-df.nonlineardetrended
 
-eventDetect = detectMMGEvent(dftmp)
-
-mag = sqrt(dftmp$X.A1.X.^2+dftmp$X.A1.Y.^2+dftmp$X.A1.Z.^2)
-
-channel = df.nonlineardetrended$X.A1.X.
-dfplot<-data.frame(time = df$X.Time.,channel, df$X.PULSE*max(channel), mag, eventDetect*max(channel))
-dygraph(dfplot, main = "Accelerometer y-axis")%>%dyRangeSelector()%>% 
-  dyOptions(colors = c('black', 'blue', 'green','red')) %>% 
-  dyAxis("x", label="Time (s)") %>% 
-  dyAxis("y", label="Angular velocity")
+eventDetect = detectMMGEvent(dftmp, PLOT=TRUE)
 
 
 ```
