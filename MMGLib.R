@@ -4,12 +4,71 @@
 # author: "Alice Rueda"
 # date: "February 19, 2019"
 # This file contains the functional calls for MMG analysis using accelerometers.
+
+# Functions include:
+# 1. Detect events based on signal power
+# 2. Check if Pulse indication for start and stop of the event period
+# 3. Removel small activity segments
+
+
 # ---
+
+
+# Event Detection ---------------------------------------------------------
+
+
+# Remove smaller segment
+removeSmallSegment<-function(eventDetectRegion){
+  #Starting from event detected, ie eventDetectRegion[1]==1
+  #eventDetectRegion <- eventDetect[3694:4413]
+  tmp <-eventDetectRegion
+  len <- length(tmp)
+  
+  # Finding number of segments
+  tmp <- c(tmp, 0)                        # Padding zero for differentiation
+  diffEventPulse <- diff(tmp, 1)
+  stopSeg <- which(diffEventPulse == -1)  # Dropping edge of the segment
+  startSeg <- which(diffEventPulse == 1)  # Raising edge of the segment
+  numSegments <- length(stopSeg)
+  
+  # Finding the longest segment
+  # Exit if there is only 1 segment
+  if (numSegments == 1){
+    return(eventDetectRegion)
+    break
+  }
+  # Handing different starting point and calculate the first segment
+  segLength <- zeros(numSegments)
+  if (tmp[1]==1) {                        
+    segLength[1]<-stopSeg[1]
+    nextSeg <- 2
+    stopSeg <- stopSeg[-1]    # Removing first falling edge 
+  } else {
+    nextSeg <- 1
+  }
+  
+  # Finding the rest of the segment length
+  for (i in nextSeg:numSegments){
+    segLength[i]<-stopSeg[i] - startSeg[i]
+  }
+  
+  # Finding the largest segment
+  mainSegment<-which.max(segLength)
+  
+  # Removing all segments, except the longest one
+  eventDetectRegion<-zeros(len)
+  startEvent <- startSeg[mainSegment]
+  stopEvent <- stopSeg[mainSegment]
+  eventDetectRegion[startEvent:stopEvent]<- 1
+  return(eventDetectRegion)
+}
+
+
 
 # Using signal information and pulse indications to detection events
 detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE, ampFactor=1){
   
-  # Adding optional amplification factor to weak signals
+  # Adding optional amplification factor , weak signals
   tmpx = dftmp$X.A1.X.*ampFactor
   tmpy = dftmp$X.A1.Y.*ampFactor
   tmpz = dftmp$X.A1.Z.*ampFactor
@@ -38,11 +97,12 @@ detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE, ampFactor=1){
   # Event indication from pulse information
   diffPulse <- diff(dftmp$X.PULSE, lag=1)
   pulseStart <- which(diffPulse == 1)
-  totalPulses <- sum(pulseStart)
+  totalPulses <- length(pulseStart)
   
-  if (totalPulses > 7) {
+  
+  if (totalPulses > 6) {         # This part takes care of 7 and 8 pulses
     eventPulse <- zeros(length(dftmp$X.PULSE))
-    if (totalPulses == 8) {
+    if (totalPulses == 8) {      # if there are 8 pulses, the pulses come in start-stop pair
       for (i in 1:4) {
         startIdx <- pulseStart[2*i-1]
         stopIdx <- pulseStart[2*i]
@@ -50,7 +110,7 @@ detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE, ampFactor=1){
         eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
       }
     }
-    else {
+    else {                        # if there are 7 pulses, the first pulse is stop pulse, and then three start-stop pair
       startIdx <- 1
       stopIdx <- pulseStart[1]
       eventPulse[startIdx:stopIdx] <- 1
@@ -62,6 +122,9 @@ detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE, ampFactor=1){
         eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
       }
     }
+  }
+  else {                          # Any number of pulses other than 7 and 8 will not be ignored
+    eventPulse <- ones(length(dftmp$X.PULSE))
   }
    
   # Combing PULSE info with signal event
@@ -81,4 +144,62 @@ detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE, ampFactor=1){
   }
   
   return(eventDetect)  
+}
+
+
+
+
+# Filters -----------------------------------------------------------------
+
+# Butterworth Lowpass Filter
+butterLowPassFilter <- function(channel, cutoff = 2, Fs = 50){
+  Fn <- Fs/2
+  f <- cutoff
+  per <- f/Fn
+  bf <- butter(3, per, type = "low")
+  
+  filtered <- filtfilt(bf, channel)
+  
+  return(filtered)
+}
+
+# Butterworth Highpass Filter
+butterHighPassFilter <- function(channel, cutoff = 2, Fs = 50){
+  Fn <- Fs/2
+  f <- cutoff
+  per <- f/Fn
+  bf <- butter(3, per, type = "high")
+  
+  filtered <- filtfilt(bf, channel)
+  
+  return(filtered)
+}
+
+
+
+# Partitioning and Segmenting into Tasks Segments -------------------------
+
+# Using the distance of 0 and 1 window length as the separation points
+findSep <- function(eventDetect){
+  changes <- diff(eventDetect, lag = 1)
+  startIdx<-which(changes == 1)#[[1]]
+  stopIdx<-which(changes == -1)
+  numSegment <- length(startIdx)
+  segmentLength <- stopIdx - startIdx
+  zeroLength <- startIdx[2:numSegment]-stopIdx[1:numSegment-1]
+  zeroLength <- c(zeroLength,(length(eventDetect)-stopIdx[numSegment]))
+  sep = startIdx[1]
+  total = startIdx[1]
+  for (i in 1:numSegment){
+    sep = c(sep,segmentLength[i],zeroLength[i])
+    total = total +segmentLength[i]+zeroLength[i]
+  }
+  return(sep)
+}
+
+# Partition the signal according to the found separation points
+partitionChannel <- function(channel,sep){
+  #sep = findSep(eventDetect)
+  partChannel <- partition.vector(channel,sep)
+  return(partChannel)
 }

@@ -6,7 +6,6 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -17,7 +16,7 @@ This file reads the MMG signal from *.txt files and display the raw signal befor
 - Pre-processing the necessary signal including detrendng, filtering, and segment the signals into activity windows with use of PULSE signals
 - Extract features from the clean segmented signals
 ```{r packages}
-source("IMULib.R")
+#source("IMULib.R")
 source("MMGLib.R")
 source("PlotSignals.R")
 source("TREMSENToolbox.R")
@@ -76,9 +75,75 @@ ggplotAccelerometer(df.nonlineardetrended)
 # Event detection  ---------------------------------------------------
 
 # Using detrend dataframe for event detection
-dftmp<-df.nonlineardetrended
+dfdetrended<-df.nonlineardetrended
 
-eventDetect = detectMMGEvent(dftmp, PLOT=TRUE)
+eventDetect = detectMMGEvent(dfdetrended, percentage = 0.05, PLOT=TRUE)
+
+scaling = 0.5
+channel = dftmp$X.A1.X.
+dfplot1<-data.frame(time = dfdetrended$X.Time., channel, dfdetrended$X.PULSE*max(channel)*scaling, eventDetect*max(channel)*scaling)
+dygraph(dfplot1, main = "Accelerometer x-axis") %>%
+  dyAxis("x", label="Time (s)") %>% 
+  dyAxis("y", label="Angular velocity") %>%
+  dyOptions(colors = c('black', 'blue', 'red')) %>% 
+  dyLegend(width = 130) %>%
+  dyRangeSelector() 
+  
+
+```
+```{r Lowpass Filter}
+
+filteredLP <- butterLowPassFilter(channel, cutoff = 2, Fs = 50)   # Motion artifact
+filteredHP <- butterHighPassFilter(channel, cutoff = 2, Fs = 50)  # MMG signals
+residual <- channel - filteredLP        # Just to show that the MMG signal is the same as subtracting the motion artifacts from the original signal
+
+#dfplot<-data.frame(time = df$X.Time., eventDetect*max(channel), filtered, channel, (channel-filtered))
+dfplot<-data.frame(time = dfdetrended$X.Time., channel, filteredLP, eventDetect*max(channel))
+dygraph(dfplot, main = 'With Low Pass Filter')%>%
+  dyOptions(colors = c('black', 'blue', 'red')) %>%
+  dyRangeSelector()
+
+
+#dfplot<-data.frame(time = df$X.Time., eventDetect*max(channel), filtered, channel, (channel-filtered))
+dfplot<-data.frame(time = dfdetrended$X.Time., residual, filteredHP, eventDetect*max(residual))
+dygraph(dfplot, main = 'With Low Pass Filter')%>%
+  dyOptions(colors = c('black', 'blue', 'red')) %>%
+  dyRangeSelector()
+
+
+differences <- filteredHP - residual
+
+#dfplot<-data.frame(time = df$X.Time., eventDetect*max(channel), filtered, channel, (channel-filtered))
+dfplot<-data.frame(time = dfdetrended$X.Time., differences, eventDetect*max(residual))
+dygraph(dfplot, main = 'With Low Pass Filter')%>%
+  dyOptions(colors = c('black', 'blue', 'red')) %>%
+  dyRangeSelector()
+
 
 
 ```
+
+
+
+```{r Segmentation}
+# Partition signal -----------------------------------------------
+sep <- findSep(eventDetect)
+partChannel <- partitionChannel(filteredHP,sep)
+partOrignal <- partitionChannel(channel,sep)
+numSegment <- size(partChannel,2)  # The activities are stored in even number list of partChannel
+
+pinchMMG <- partChannel$'2'
+pinchOrignal <- partOrignal$'2'
+
+handMMG <- partChannel$'4'
+handOrignal <- partOrignal$'4'
+
+supMMG <- partChannel$'6'
+supOrignal <- partOrignal$'6'
+
+flexMMG <- partChannel$'8'
+flexOrignal <- partOrignal$'8'
+
+
+```
+
