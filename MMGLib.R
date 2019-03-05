@@ -7,7 +7,7 @@
 # ---
 
 # Using signal information and pulse indications to detection events
-detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE){
+detectMMGEvent <- function(dftmp, percentage = 0.08, PLOT=FALSE, ampFactor=1){
   
   # Adding optional amplification factor to weak signals
   tmpx = dftmp$X.A1.X.*ampFactor
