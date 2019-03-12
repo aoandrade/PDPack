@@ -18,7 +18,11 @@
 
 # Event Detection ---------------------------------------------------------
 
-library('signal')
+library(signal)
+library(signal)
+library(dygraphs)
+source("TREMSENToolbox.R")
+
 
 # Remove smaller segment
 removeSmallSegment<-function(eventDetectRegion){
