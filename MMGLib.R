@@ -2,20 +2,23 @@
 # ---
 # title:MMGLib.R
 # author: "Alice Rueda"
-# date: "February 19, 2019"
-# This file contains the functional calls for MMG analysis using accelerometers.
-
+# created: "February 19, 2019"
+# last updated: "March 12, 2019"
+#
+# This file contains the functional calls for MMG analysis using the IMU accelerometer signals.
+#
 # Functions include:
 # 1. Detect events based on signal power
 # 2. Check if Pulse indication for start and stop of the event period
 # 3. Removel small activity segments
-
-
+# 4. Butterworth filter to remove motion artifacts
+# 5. Segment signal dataframe into 4 task dataframes
 # ---
 
 
 # Event Detection ---------------------------------------------------------
 
+library('signal')
 
 # Remove smaller segment
 removeSmallSegment<-function(eventDetectRegion){
@@ -202,4 +205,51 @@ partitionChannel <- function(channel,sep){
   #sep = findSep(eventDetect)
   partChannel <- partition.vector(channel,sep)
   return(partChannel)
+}
+
+
+# Convert Partitioned Data into Dataframe
+convertMatrix2DataFrame<-function(mat, colHeader){
+  dfmat <- as.data.frame(mat)
+  names(dfmat) <- colHeader
+  return(dfmat)
+}
+
+# Separate the task signals for all channels according to the detect event windowing
+
+partitionDataFrame <- function(dfMMG, eventDetect) {
+  
+  # Parition according to the eventDetect windowing
+  sep <- findSep(eventDetect)
+  
+  # Number of signals in a dataframe
+  ncol <- dim(dfMMG)[2]
+  
+  # Declare the task matrix to hold segmented signals
+  pinch <- matrix(0L, nrow = sep[2], ncol = ncol)
+  hand <- matrix(0L, nrow = sep[4], ncol = ncol)
+  pron <- matrix(0L, nrow = sep[6], ncol = ncol)
+  flex <- matrix(0L, nrow = sep[8], ncol = ncol)
+  
+  # Partition all channels
+  for (j in 1:ncol) {
+    partSignal <- partitionChannel(dfMMG[,j],sep)
+    
+    pinch[,j] <- partSignal$'2'
+    hand[,j]  <- partSignal$'4'
+    pron[,j]  <- partSignal$'6'
+    flex[,j] <- partSignal$'8'
+    
+  }  
+  
+  # Convert data matrix into dataframes
+  colHeader <- colnames(dfMMG)
+  dfpinch <- convertMatrix2DataFrame(pinch,colHeader)
+  dfhand <- convertMatrix2DataFrame(hand,colHeader)
+  dfpron <- convertMatrix2DataFrame(pron,colHeader)
+  dfflex <- convertMatrix2DataFrame(flex,colHeader)
+  
+  dflist <- list(dfpinch, dfhand, dfpron, dfflex)
+  return(dflist)
+  
 }
