@@ -13,6 +13,7 @@
 # 6. Save the MMG signals into 4 excel files
 # ---
 
+<<<<<<< HEAD
 
 
 source("MMGLib.R")
@@ -20,6 +21,11 @@ source("PlotSignals.R")
 source("TREMSENToolbox.R")
 #install.packages("xlsx")   # install xlsx package if it is not on the package list
 library("xlsx")
+=======
+source("MMGLib.R")
+source("PlotSignals.R")
+source("TREMSENToolbox.R")
+>>>>>>> c0d20a762bd2640f020bc3fd8afa6a3e75afc808
 
 #subjectCode: get it from the directory
 pathData = "/media/alice/DATA/2019 Adriano/2019 Adriano MMG/Data/Coletas 14_11/MMG_Tremsen/COLETAS 14_11/"
@@ -108,11 +114,11 @@ ggplotAccelerometer(dfpinch)
 
 
 # Saving MMG Segments -----------------------------------------------------
+
 write.xlsx(dfpinch, paste(pathData,"PinchMMG.xlsx",sep=""))
 write.xlsx(dfhand, paste(pathData,"HandMMG.xlsx",sep=""))
 write.xlsx(dfpron, paste(pathData,"PronMMG.xlsx",sep=""))
 write.xlsx(dfflex, paste(pathData,"FlexMMG.xlsx",sep=""))
-
 
 
 
