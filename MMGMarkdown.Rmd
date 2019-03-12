@@ -16,14 +16,13 @@ This file reads the MMG signal from *.txt files and display the raw signal befor
 - Pre-processing the necessary signal including detrendng, filtering, and segment the signals into activity windows with use of PULSE signals
 - Extract features from the clean segmented signals
 ```{r packages}
-#source("IMULib.R")
 source("MMGLib.R")
 source("PlotSignals.R")
 source("TREMSENToolbox.R")
 
 #subjectCode: get it from the directory
 #pathData ="D:/Adriano/OneDrive/Projetos/2017-Brazil-Canada/DATA/EJRR/09Nov2018/EMG/Excel"
-pathData = "/media/alice/DATA/2019 Adriano/2019 Adriano MMG/Data/Coletas 14_11/MMG_Tremsen/COLETAS 14_11/"
+pathData = "/media/alice/DATA/2019 Adriano/2019 Adriano MMG/Data/Coletas 14_11/MMG_Tremsen/COLETAS 14_11"
 # defining subject and filetype
 #subjectCode = "RCS"
 signalType = "MMG"
@@ -80,7 +79,7 @@ dfdetrended<-df.nonlineardetrended
 eventDetect = detectMMGEvent(dfdetrended, percentage = 0.05, PLOT=TRUE)
 
 scaling = 0.5
-channel = dftmp$X.A1.X.
+channel = dfdetrended$X.A1.X.
 dfplot1<-data.frame(time = dfdetrended$X.Time., channel, dfdetrended$X.PULSE*max(channel)*scaling, eventDetect*max(channel)*scaling)
 dygraph(dfplot1, main = "Accelerometer x-axis") %>%
   dyAxis("x", label="Time (s)") %>% 
@@ -128,6 +127,8 @@ dygraph(dfplot, main = 'With Low Pass Filter')%>%
 ```{r Segmentation}
 # Partition signal -----------------------------------------------
 sep <- findSep(eventDetect)
+
+
 partChannel <- partitionChannel(filteredHP,sep)
 partOrignal <- partitionChannel(channel,sep)
 numSegment <- size(partChannel,2)  # The activities are stored in even number list of partChannel

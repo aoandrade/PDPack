@@ -16,6 +16,7 @@
 
 # Event Detection ---------------------------------------------------------
 
+library('signal')
 
 # Remove smaller segment
 removeSmallSegment<-function(eventDetectRegion){
@@ -202,4 +203,51 @@ partitionChannel <- function(channel,sep){
   #sep = findSep(eventDetect)
   partChannel <- partition.vector(channel,sep)
   return(partChannel)
+}
+
+
+# Convert Partitioned Data into Dataframe
+convertMatrix2DataFrame<-function(mat, colHeader){
+  dfmat <- as.data.frame(mat)
+  names(dfmat) <- colHeader
+  return(dfmat)
+}
+
+# Separate the task signals for all channels according to the detect event windowing
+
+partitionDataFrame <- function(dfMMG, eventDetect) {
+  
+  # Parition according to the eventDetect windowing
+  sep <- findSep(eventDetect)
+  
+  # Number of signals in a dataframe
+  ncol <- dim(dfMMG)[2]
+  
+  # Declare the task matrix to hold segmented signals
+  pinch <- matrix(0L, nrow = sep[2], ncol = ncol)
+  hand <- matrix(0L, nrow = sep[4], ncol = ncol)
+  pron <- matrix(0L, nrow = sep[6], ncol = ncol)
+  flex <- matrix(0L, nrow = sep[8], ncol = ncol)
+  
+  # Partition all channels
+  for (j in 1:ncol) {
+    partSignal <- partitionChannel(dfMMG[,j],sep)
+    
+    pinch[,j] <- partSignal$'2'
+    hand[,j]  <- partSignal$'4'
+    pron[,j]  <- partSignal$'6'
+    flex[,j] <- partSignal$'8'
+    
+  }  
+  
+  # Convert data matrix into dataframes
+  colHeader <- colnames(dfMMG)
+  dfpinch <- convertMatrix2DataFrame(pinch,colHeader)
+  dfhand <- convertMatrix2DataFrame(hand,colHeader)
+  dfpron <- convertMatrix2DataFrame(pron,colHeader)
+  dfflex <- convertMatrix2DataFrame(flex,colHeader)
+  
+  dflist <- list(dfpinch, dfhand, dfpron, dfflex)
+  return(dflist)
+  
 }
