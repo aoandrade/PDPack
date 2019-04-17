@@ -7,7 +7,6 @@
 
 # Libraries ---------------------------------------------------------------
 
-
 #install.packages if they are not present
 if (!require(mmap)) install.packages('mmap')
 if (!require(pracma)) install.packages('pracma')
