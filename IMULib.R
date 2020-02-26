@@ -58,7 +58,6 @@ removeSmallSegment<-function(eventDetectRegion){
 
 # Using signal information and pulse indications to detection events
 detectEvent <- function(dftmp, percentage = 0.08){
-  # Update Oct 31, 2019: Add code to handle conditions when there are not eventPulse indication
   # Finding threshold, setting at 5% of noise removed maximum magnitude
   tmp <- sqrt(dftmp$X.G1.Z.^2+dftmp$X.G1.Y.^2+dftmp$X.G1.X.^2)
   # Using low pass to remove high frequency noise
@@ -78,22 +77,16 @@ detectEvent <- function(dftmp, percentage = 0.08){
   eventDetect[filtered >= threshold] <- 1 
   
   # Event indication from pulse information
-  if (sum(dftmp$X.PULSE) == 0){
-    startIdx <- 1
-    stopIdx <- length(dftmp$X.PULSE)
-    eventPulse <- ones(stopIdx)
-    eventDetect <- removalSmallSegment(eventDetect)
-  } else {
-    diffPulse <- diff(dftmp$X.PULSE, lag=1)
-    pulseStart <- which(diffPulse == 1)
-    eventPulse <- zeros(length(dftmp$X.PULSE))
-    for (i in 1:4){
-      startIdx <- pulseStart[2*i-1]
-      stopIdx <- pulseStart[2*i]
-      eventPulse[startIdx:stopIdx] <- 1
-      eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
-    }
+  diffPulse <- diff(dftmp$X.PULSE, lag=1)
+  pulseStart <- which(diffPulse == 1)
+  eventPulse <- zeros(length(dftmp$X.PULSE))
+  for (i in 1:4){
+    startIdx <- pulseStart[2*i-1]
+    stopIdx <- pulseStart[2*i]
+    eventPulse[startIdx:stopIdx] <- 1
+    eventDetect[startIdx:stopIdx]<-removeSmallSegment(eventDetect[startIdx:stopIdx])
   }
+  
   # Combing PULSE info with signal event
   eventDetect <- eventDetect*eventPulse
 
@@ -121,11 +114,13 @@ findSep <- function(eventDetect){
 }
 
 # Partition the signal with return separation indice, provided that sep has been found using findSep()
-partitionChannel <- function(channel,sep1){
+partitionChannel <- function(channel,sep){
   #sep = findSep(eventDetect)
-  partChannel <- partition.vector(channel,sep1)
+  partChannel <- partition.vector(channel,sep)
   return(partChannel)
 }
+
+
 
 # Function to create label vector
 createLabels<-function(eventDetect, minTime=2, deltaT=0.02){

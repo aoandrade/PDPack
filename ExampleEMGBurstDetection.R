@@ -9,3 +9,4 @@ df <- readWorkbook(filename,
 
 # Event detection and segmentation
 emgBurst <- detectEMGBurst(df, cutoffFreq=1, percentage = 0.08, PLOT=TRUE)
+
